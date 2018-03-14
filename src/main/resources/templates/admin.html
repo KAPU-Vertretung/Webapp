@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="de"
+    xmlns:th="http://www.thymeleaf.org" 
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    
+    <link rel="stylesheet" type="text/css" href="../css/style.css" />
+    <link href='https://fonts.googleapis.com/css?family=Abel' rel='stylesheet' />
+        
+    <script type="text/javascript" src="../js/toggle.js"></script>
+    <script type="text/javascript" src="../js/sha256.js"></script>
+        
+    <title>Admin | Kapu-Vertretunsplan</title>
+</head>
+
+<header>
+    <h1>Kapu-Vertretungsplan</h1>
+</header>
+
+<body>
+    <div class="subhead">
+        <table class="head">
+            <tr>
+                <td class='left'> <p>Deine Gruppe: Admin</p> </td>
+                <td class='right'> <form method='post' th:action="@{/logout}"> <input type="submit" name= "sent" class="logout" value="Logout" /> </form> </td>
+            </tr>
+        </table>
+    </div>
+
+    <div id="body">
+        <center th:if="${message}"> <h2 th:text="${message}"/> </center>
+        <center th:if="${subMessage}"> <h1 th:text="${subMessage}"/> </center>
+    
+        <input type="button" class="vertretung" onclick="javascript:toggle('upload')" value="Pläne aktualisieren" />
+        <div id="upload" class="flip" th:style="${uploadedFile} ? 'display:block' : 'display:none'" >
+            <p> Schülerplan </p>
+            
+            <form th:action="@{/admin/upload/splan}" method="POST" enctype="multipart/form-data">
+                <input type="file" name="file" />
+                <input type="submit" value="Hochladen" />
+            </form>
+            
+            <p> Lehrerplan </p>
+            <form th:action="@{/admin/upload/lplan}" method="POST" enctype="multipart/form-data">
+                <input type="file" name="file" />
+                <input type="submit" value="Hochladen" />
+            </form>
+        </div>
+        
+        <input type="button" class="vertretung" onclick="javascript:toggle('Nutzerverwaltung')" value="Nutzerverwaltung" />
+        <div id="Nutzerverwaltung" class="flip" th:style="${editedUser} ? 'display:block' : 'display:none'">
+            <table style="width:100%;" >
+                <tr> <th></th> <th>Neuen Nutzer anlegen</th> <th></th> </tr>
+                <tr> 
+                    <form th:action="@{/admin/userEdit}" th:object="${editUser}" method="POST" onsubmit="return withHashedPassword(this);" >
+                        <td style="box-shadow: none; width: 20%" > <input style="box-shadow: none; width: 90%" type="text" placeholder="Name" th:field="*{name}" /> </td>
+                        <td> <input style="box-shadow: none;" type="text" placeholder="Passwort" id="passwordInput" name="passwordInput" /> <input type="hidden" th:field="*{password}" /> </td>
+                        <td> <input type="submit" class="logout" name="userCreate" value="Nutzer erstellen" /> </td>
+                    </form>
+                </tr>
+                <tr th:if="${not #lists.isEmpty(userList)}"> <th/> <th>Nutzer bearbeiten</th> <th/> </tr>
+                    <tr th:each="user : ${userList}">
+                        <form th:action="@{/admin/userEdit}" th:object="${editUser}" method="POST" onsubmit="return withHashedPassword(this);" >
+                            <td th:text="${user}" />
+                            <td> 
+                                <table style="box-shadow: none;" >
+                                    <tr> <td><input type="hidden" name="name" th:value="${user}" /> <input style="box-shadow: none;" placeholder="Neues Passwort" type="text" id="passwordInput" name="passwordInput" /> <input type="hidden" id="password" name="password" th:field="*{password}" /> </td> <td><input type="submit" name="pwChange" value="Passwort ändern" /></td> </tr>
+                                </table> 
+                            </td>
+                            <td> <input type="submit" class="logout" name="userDelete" value="Löschen" /> </td>
+                        </form>
+                    </tr>
+                    
+                    <tr> <th/> <th>Feste Nutzer bearbeiten</th> <th/> </tr>
+                    
+                    <tr>
+                        <form th:action="@{/admin/userEdit}" th:object="${editUser}" method="POST" onsubmit="return withHashedPassword(this);" >
+                            <td>Lehrer</td>
+                            <td> 
+                                <table style="box-shadow: none;" >
+                                    <tr> <td><input type="hidden" name="name" th:value="'Lehrer'" /> <input style="box-shadow: none;" placeholder="Neues Passwort" type="text" id="passwordInput" name="passwordInput" /> <input type="hidden" id="password" name="password" th:field="*{password}" /> </td> <td><input type="submit" name="pwChange" value="Passwort ändern" /></td> </tr>
+                                </table> 
+                            </td>
+                            <td> - </td>
+                        </form>
+                    </tr>
+                    <tr>
+                        <form th:action="@{/admin/userEdit}" th:object="${editUser}" method="POST" onsubmit="return withHashedPassword(this);" >
+                            <td>Admin</td>
+                            <td> 
+                                <table style="box-shadow: none;" >
+                                    <tr> <td><input type="hidden" name="name" th:value="'Admin'" /> <input style="box-shadow: none;" placeholder="Neues Passwort" type="text" id="passwordInput" name="passwordInput" /> <input type="hidden" id="password" name="password" th:field="*{password}" /> </td> <td><input type="submit" name="pwChange" value="Passwort ändern" /></td> </tr>
+                                </table> 
+                            </td>
+                            <td> - </td>
+                        </form>
+                    </tr>
+            </table>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        function withHashedPassword(form) {
+            const passwordInputField = form["passwordInput"];
+            const passwordField = form["password"];
+
+            passwordField.value = sha256(passwordInputField.value);
+            return true;
+        }
+        /*]]>*/
+    </script>
+
+</body>
+
+</html>

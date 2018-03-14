@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="de"
+    xmlns:th="http://www.thymeleaf.org" 
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    
+    <link rel="stylesheet" type="text/css" href="../css/style.css" />
+    <link href="https://fonts.googleapis.com/css?family=Abel" rel="stylesheet" />
+        
+    <script type="text/javascript" src="../js/toggle.js"></script>
+        
+    <title th:text="${user} + ' | Kapu-Vertretungsplan'"/>
+</head>
+
+<header>
+    <h1>Kapu-Vertretungsplan</h1>
+</header>
+
+<body>
+    <div class="subhead" id="subhead">
+        <table class='head'>
+            <tr>
+                <td class='left'> <p th:text="'Deine Gruppe: ' + ${user}"/> </td>
+                <td class='right'> <form method='post' th:action="@{/logout}"> <input type="submit" name= "sent" class="logout" value="Logout"/> </form> </td>
+            </tr>
+        </table>
+    </div>
+
+        <div id="body" >
+            <center th:if="${message}"> <h2 th:text="${message}"/> </center>
+            <center th:if="${errorMsg}"> <h1 th:text="${errorMsg}"/> </center>
+
+            <div th:if="${vList}" th:each="map,iterStat : ${vList}">
+                <input type="button" class="vertretung" th:onclick="'javascript:toggle(\'' + ${iterStat.index} + '\')'"
+                th:value="${map.get('Stunde')} + '. Stunde, ' + (${map.get('(Fach)')} ? ${map.get('(Fach)')} : ${map.get('Ersatz Fach')}) + ': ' + ${map.get('Art')}"/>
+                <div th:id="${iterStat.index}" class="flip" style="display:none">
+                    <table>
+                        <tr th:each="mapEntry: ${map}">
+                            <td style="width:50%; width=50%" th:text="${mapEntry.key}"></td> <td style="width:50%" th:text="${mapEntry.value}"></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+</body>
+
+</html>
